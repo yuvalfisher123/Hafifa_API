@@ -1,7 +1,6 @@
 from sqlalchemy import text
 from flask import Flask
 from dbConnection import session
-from dbConnection import Event
 
 app = Flask(__name__)
 

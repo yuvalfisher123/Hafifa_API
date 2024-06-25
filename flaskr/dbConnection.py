@@ -18,16 +18,6 @@ class Event(Base):
     latitude = db.Column(db.DOUBLE_PRECISION, nullable=False)
     description = db.Column(db.String(500), nullable=False)
 
-    def to_json(self):
-        return {
-            'id': self.id,
-            'lut': self.lut,
-            'name': self.name,
-            'longitude': self.longitude,
-            'latitude': self.latitude,
-            'description': self.description
-        }
-
 
 Base.metadata.create_all(engine)
 
