@@ -1,11 +1,11 @@
-import json
+import math
 
 from sqlalchemy import text
-from flask import Flask, request, Response
+from flask import Flask, request
+import numpy as np
 # from dbConnection import session
 
 import pandas as pd
-import psycopg2
 from sqlalchemy import create_engine
 
 engine = create_engine('postgresql+psycopg2://postgres:postgres@localhost:5432/postgres')
@@ -50,5 +50,10 @@ def api_entrance(start_date, end_date):
 
         result_set.sort_values(sort_by, ascending=ascend_list, inplace=True)
 
-    return Response(result_set.to_json(double_precision=15, orient="records", default_handler=lambda x: f"{x}"),
-                    mimetype='json')
+    data = result_set.to_dict('records')
+    data_matrix = []
+
+    for i in range(0, len(data), 10):
+        data_matrix.append(data[i:i+10])
+
+    return data_matrix
