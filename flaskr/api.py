@@ -1,7 +1,7 @@
 import json
 
 from sqlalchemy import text
-from flask import Flask, request
+from flask import Flask, request, Response
 # from dbConnection import session
 
 import pandas as pd
@@ -33,13 +33,14 @@ def api_entrance(start_date, end_date):
     result_set['description'].replace("", "no description", inplace=True)
 
     sort_params = request.json
+    print(sort_params)
     sort_by = sort_params.get("sort_by")
     ascend = sort_params.get("ascend")
 
-    if type(sort_by) != list or type(ascend) != list:
-        return "values need to be lists", 400
-
     if sort_by and ascend and len(sort_by) == len(ascend):
+        if type(sort_by) != list or type(ascend) != list:
+            return "values need to be lists", 400
+
         result_set.sort_values(sort_by, ascending=ascend, inplace=True)
     elif sort_by:
         ascend_list = ascend[:len(sort_by)] if ascend is not None else []
@@ -49,6 +50,5 @@ def api_entrance(start_date, end_date):
 
         result_set.sort_values(sort_by, ascending=ascend_list, inplace=True)
 
-    print(result_set)
-
-    return ("test")
+    return Response(result_set.to_json(double_precision=15, orient="records", default_handler=lambda x: f"{x}"),
+                    mimetype='json')
