@@ -1,6 +1,14 @@
+import json
+
 from sqlalchemy import text
-from flask import Flask
-from dbConnection import session
+from flask import Flask, request
+# from dbConnection import session
+
+import pandas as pd
+import psycopg2
+from sqlalchemy import create_engine
+
+engine = create_engine('postgresql+psycopg2://postgres:postgres@localhost:5432/postgres')
 
 app = Flask(__name__)
 
@@ -16,9 +24,31 @@ def api_entrance(start_date, end_date):
      WHERE lut BETWEEN :start AND :end)
      SELECT id, lut, name, longitude, latitude, description
      FROM ids_in_dates
-     WHERE rank_number = 1;''')
+     WHERE rank_number = 1;
+     ''')
 
-    result = session.execute(statement, {'start': start_date, 'end': end_date}).mappings()
-    result = [{**row} for row in result]
+    result_set = pd.read_sql(statement, params={"start": start_date, "end": end_date}, con=engine)
 
-    return result
+    result_set['description'].fillna("no description", inplace=True)
+    result_set['description'].replace("", "no description", inplace=True)
+
+    sort_params = request.json
+    sort_by = sort_params.get("sort_by")
+    ascend = sort_params.get("ascend")
+
+    if type(sort_by) != list or type(ascend) != list:
+        return "values need to be lists", 400
+
+    if sort_by and ascend and len(sort_by) == len(ascend):
+        result_set.sort_values(sort_by, ascending=ascend, inplace=True)
+    elif sort_by:
+        ascend_list = ascend[:len(sort_by)] if ascend is not None else []
+
+        for i in range(len(sort_by) - len(ascend_list)):
+            ascend_list.append(True)
+
+        result_set.sort_values(sort_by, ascending=ascend_list, inplace=True)
+
+    print(result_set)
+
+    return ("test")
