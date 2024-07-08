@@ -1,4 +1,4 @@
-import math
+import os
 
 from sqlalchemy import text
 from flask import Flask, request
@@ -6,7 +6,7 @@ from flask import Flask, request
 import pandas as pd
 from sqlalchemy import create_engine
 
-engine = create_engine('postgresql+psycopg2://postgres:postgres@localhost:5432/postgres')
+engine = create_engine(os.environ.get('DATABASE_PATH', 'postgresql+psycopg2://postgres:postgres@localhost:5432/postgres'))
 
 app = Flask(__name__)
 
@@ -50,7 +50,7 @@ def sort_data(result_set, sort_by, ascend):
     result_set.sort_values(sort_by, ascending=ascend_list, inplace=True)
 
 
-@app.get('/<start_date>/<end_date>')
+@app.post('/<start_date>/<end_date>')
 def api_entrance(start_date, end_date):
     result_set = get_data_between_dates(start_date, end_date)
 
